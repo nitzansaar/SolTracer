@@ -31,6 +31,38 @@ interface LegacyMessage {
 }
 
 /**
+ * Format any error object into a readable string
+ * @param err The error object
+ * @returns A string representation of the error
+ */
+function formatError(err: any): string {
+  if (err === null || err === undefined) {
+    return 'Unknown error';
+  }
+  
+  if (typeof err === 'string') {
+    return err;
+  }
+  
+  if (typeof err === 'object') {
+    // Check if it's an Error instance
+    if (err.message) {
+      return err.message;
+    }
+    
+    // Try to extract meaningful info from the error object
+    try {
+      return JSON.stringify(err);
+    } catch (e) {
+      // If circular reference or other JSON stringify error
+      return Object.prototype.toString.call(err);
+    }
+  }
+  
+  return String(err);
+}
+
+/**
  * Core transaction simulator that replays and analyzes Solana transactions
  */
 export class TransactionSimulator {
@@ -106,7 +138,7 @@ export class TransactionSimulator {
       const debugTransaction: DebugTransaction = {
         signature,
         success: !(simulationResult.value.err),
-        error: simulationResult.value.err?.toString(),
+        error: simulationResult.value.err ? formatError(simulationResult.value.err) : undefined,
         instructions: [],
         timestamp: transaction.blockTime || undefined,
         slot: transaction.slot,
@@ -200,7 +232,7 @@ export class TransactionSimulator {
       return {
         signature,
         success: false,
-        error: error.message,
+        error: formatError(error),
         instructions: [],
       };
     }
@@ -250,7 +282,7 @@ export class TransactionSimulator {
 
       const debugTransaction: DebugTransaction = {
         success: !(simulationResult.value.err),
-        error: simulationResult.value.err?.toString(),
+        error: simulationResult.value.err ? formatError(simulationResult.value.err) : undefined,
         instructions: [],
       };
 
@@ -324,7 +356,7 @@ export class TransactionSimulator {
       console.error('Error debugging local transaction:', error);
       return {
         success: false,
-        error: error.message,
+        error: formatError(error),
         instructions: [],
       };
     }

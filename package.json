@@ -1,0 +1,73 @@
+{
+  "name": "soltrace",
+  "version": "0.1.0",
+  "description": "A powerful Solana transaction debugger and simulator",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "soltrace": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "start": "node dist/cli/index.js",
+    "dev": "ts-node src/cli/index.ts",
+    "web": "ts-node src/web/server.ts",
+    "postinstall": "node -e \"try { require('fs').mkdirSync(require('path').join(process.env.HOME || '', '.soltrace'), { recursive: true }); } catch (e) {}\"",
+    "lint": "eslint . --ext .ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "solana",
+    "anchor",
+    "blockchain",
+    "debugger",
+    "simulator",
+    "development",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@project-serum/anchor": "^0.26.0",
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.78.5",
+    "@types/inquirer": "^8.2.5",
+    "@types/node": "^20.5.7",
+    "borsh": "^1.0.0",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "diff": "^5.1.0",
+    "figlet": "^1.6.0",
+    "inquirer": "^8.2.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.0.3",
+    "@types/express": "^5.0.1",
+    "@types/figlet": "^1.5.6",
+    "@types/inquirer": "^8.2.5",
+    "@types/node": "^20.5.7",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/soltrace"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/soltrace/issues"
+  },
+  "homepage": "https://github.com/yourusername/soltrace#readme"
+}

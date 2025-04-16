@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolTrace - Solana Transaction Explorer</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    body {
+      padding-top: 20px;
+      padding-bottom: 40px;
+      background-color: #f8f9fa;
+    }
+    .header {
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 20px;
+    }
+    .logo {
+      font-weight: bold;
+      color: #9945FF;
+    }
+    .content {
+      margin-top: 30px;
+    }
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .json-view {
+      background-color: #272822;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .instruction-card {
+      margin-bottom: 15px;
+    }
+    .logs-container {
+      font-family: monospace;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .log-line {
+      margin: 0;
+      padding: 2px 0;
+    }
+    .log-program {
+      color: #0066cc;
+    }
+    .log-success {
+      color: #28a745;
+    }
+    .log-error {
+      color: #dc3545;
+    }
+    .account-diff {
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .networks {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    .network-btn {
+      margin-right: 10px;
+    }
+    .logo-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #9945FF, #14F195);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-content">
+      <div class="logo">
+        <div class="logo-image">
+          <img src="logo.svg" alt="SolTrace Logo" width="48" height="48">
+        </div>
+        <div class="logo-text">
+          <h1 class="logo-title">SolTrace</h1>
+          <div class="logo-subtitle">Solana Transaction Explorer</div>
+        </div>
+      </div>
+      <div class="network-selector">
+        <button class="network-btn" data-network="mainnet">Mainnet</button>
+        <button class="network-btn" data-network="testnet">Testnet</button>
+        <button class="network-btn btn-primary" data-network="devnet">Devnet</button>
+        <button class="network-btn" data-network="localnet">Local</button>
+        <button class="network-btn" data-network="custom">Custom</button>
+        <div class="custom-rpc">
+          <input type="text" id="custom-rpc-url" placeholder="Enter custom RPC URL">
+          <button class="btn btn-outline" id="custom-rpc-connect">Connect</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="main-content">
+      <!-- Transaction Form -->
+      <div class="form-container">
+        <h2>Trace a Solana Transaction</h2>
+        <p>Enter a transaction signature to decode and analyze it.</p>
+        
+        <form id="transaction-form">
+          <div class="input-group">
+            <input type="text" id="transaction-signature" placeholder="Enter transaction signature" required>
+            <button type="submit" class="btn btn-primary">Trace Transaction</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Loading Indicator -->
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Processing transaction...</p>
+      </div>
+      
+      <!-- Results -->
+      <div class="result-container" id="result-container">
+        <!-- Transaction Overview -->
+        <div class="result-section">
+          <div class="section-title">
+            <span>Transaction Overview</span>
+            <button class="btn btn-outline" id="toggle-json">View JSON</button>
+          </div>
+          
+          <div class="overview-box" id="overview-summary">
+            <div class="overview-item">
+              <div class="overview-label">Signature</div>
+              <div class="overview-value" id="tx-signature"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Status</div>
+              <div class="overview-value" id="tx-status"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Block</div>
+              <div class="overview-value" id="tx-block"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Timestamp</div>
+              <div class="overview-value" id="tx-timestamp"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Fee</div>
+              <div class="overview-value" id="tx-fee"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Instructions</div>
+              <div class="overview-value" id="tx-instructions-count"></div>
+            </div>
+            <div class="overview-item">
+              <div class="overview-label">Programs</div>
+              <div class="overview-value" id="tx-programs"></div>
+            </div>
+          </div>
+          
+          <div id="overview-json">
+            <pre id="tx-json"></pre>
+          </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="result-section">
+          <div class="section-title">
+            <span>Instructions</span>
+          </div>
+          
+          <div id="instructions-container">
+            <!-- Instructions will be inserted here dynamically -->
+          </div>
+        </div>
+        
+        <!-- Logs -->
+        <div class="result-section">
+          <div class="section-title">
+            <span>Logs</span>
+          </div>
+          
+          <div class="logs-container" id="logs-container">
+            <!-- Logs will be inserted here dynamically -->
+          </div>
+        </div>
+        
+        <!-- Account Diffs -->
+        <div class="result-section">
+          <div class="section-title">
+            <span>Account Changes</span>
+          </div>
+          
+          <div id="account-diffs-container">
+            <!-- Account diffs will be inserted here dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>SolTrace v<span id="app-version">1.0.0</span> | A Solana Transaction Tracer</p>
+    </div>
+  </footer>
+  
+  <!-- Instruction Card Template -->
+  <template id="instruction-template">
+    <div class="instruction-card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">Instruction <span class="instruction-index"></span>: <span class="instruction-name"></span></h3>
+      </div>
+      <div class="card-body">
+        <ul class="nav-tabs" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link active" data-tab="overview">Overview</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="accounts">Accounts</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-tab="data">Data</button>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show" data-content="overview">
+            <div class="overview-item">
+              <div class="overview-label">Program</div>
+              <div class="overview-value program-id"></div>
+            </div>
+          </div>
+          <div class="tab-pane fade" data-content="accounts">
+            <div class="accounts-list"></div>
+          </div>
+          <div class="tab-pane fade" data-content="data">
+            <pre class="instruction-data"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <!-- Account Item Template -->
+  <template id="account-item-template">
+    <div class="overview-item account-item">
+      <div class="overview-label"></div>
+      <div class="overview-value">
+        <a href="#" class="account-address"></a>
+        <span class="account-role"></span>
+      </div>
+    </div>
+  </template>
+  
+  <!-- Account Diff Template -->
+  <template id="account-diff-template">
+    <div class="account-diff mb-3">
+      <div class="overview-item">
+        <div class="overview-label">Account</div>
+        <div class="overview-value diff-account-address"></div>
+      </div>
+      <div class="overview-item">
+        <div class="overview-label">Changes</div>
+        <div class="overview-value diff-account-changes"></div>
+      </div>
+    </div>
+  </template>
+  
+  <!-- JavaScript -->
+  <script src="main.js"></script>
+</body>
+</html> 

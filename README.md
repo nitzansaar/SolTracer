@@ -53,7 +53,10 @@ npm install
 npm run build
 
 # Run
-npm run start
+#CLI
+npm run dev -- interactive
+#Web
+npm
 ```
 
 ## License

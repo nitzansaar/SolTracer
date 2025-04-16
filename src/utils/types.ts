@@ -76,6 +76,7 @@ export interface DebugTransaction {
   timestamp?: number;
   slot?: number;
   blockTime?: number;
+  network?: string;
 }
 
 /**
@@ -89,6 +90,7 @@ export interface SimulateOptions {
   encodedTransaction?: string;
   replaceRecentBlockhash?: boolean;
   anchorIdlMap?: Map<string, any>;
+  skipNetworkFallback?: boolean;
 }
 
 /**

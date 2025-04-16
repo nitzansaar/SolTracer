@@ -22,6 +22,7 @@ import { AccountDiff, AccountState, DebugInstruction, DebugTransaction, Simulate
 import { getAccountLabel, getProgramName } from '../utils/lookup';
 import { parseTransactionLogs } from '../utils/log-parser';
 import { decodeAnchorInstruction } from '../utils/anchor-utils';
+import chalk from 'chalk';
 
 interface LegacyMessage {
   accountKeys: PublicKey[];
@@ -68,6 +69,7 @@ function formatError(err: any): string {
 export class TransactionSimulator {
   private connection: Connection;
   private anchorIdlMap: Map<string, any>;
+  private rpcUrl: string;
 
   /**
    * Creates a new simulator instance
@@ -75,6 +77,7 @@ export class TransactionSimulator {
    * @param anchorIdlMap Optional map of program IDs to Anchor IDLs
    */
   constructor(rpcUrl: string, anchorIdlMap?: Map<string, any>) {
+    this.rpcUrl = rpcUrl;
     this.connection = new Connection(rpcUrl, 'confirmed');
     this.anchorIdlMap = anchorIdlMap || new Map();
   }
@@ -91,13 +94,84 @@ export class TransactionSimulator {
   ): Promise<DebugTransaction> {
     try {
       // Fetch the transaction
-      const transaction = await this.connection.getTransaction(signature, {
+      let transaction = await this.connection.getTransaction(signature, {
         commitment: options.commitment as Finality || 'confirmed',
         maxSupportedTransactionVersion: 0,
       });
 
+      // If transaction not found, try other networks
+      if (!transaction && !options.skipNetworkFallback) {
+        console.log(chalk.yellow(`Transaction not found on current network. Trying mainnet...`));
+        
+        // Try mainnet
+        const mainnetUrl = 'https://api.mainnet-beta.solana.com';
+        if (this.rpcUrl !== mainnetUrl) {
+          const mainnetConnection = new Connection(mainnetUrl, 'confirmed');
+          try {
+            transaction = await mainnetConnection.getTransaction(signature, {
+              commitment: options.commitment as Finality || 'confirmed',
+              maxSupportedTransactionVersion: 0,
+            });
+            
+            if (transaction) {
+              console.log(chalk.green(`Transaction found on mainnet. Switching network...`));
+              this.connection = mainnetConnection;
+              this.rpcUrl = mainnetUrl;
+            }
+          } catch (err) {
+            // Ignore errors, just continue to next network
+          }
+        }
+        
+        // If still not found, try devnet
+        if (!transaction) {
+          console.log(chalk.yellow(`Not found on mainnet. Trying devnet...`));
+          const devnetUrl = 'https://api.devnet.solana.com';
+          if (this.rpcUrl !== devnetUrl) {
+            const devnetConnection = new Connection(devnetUrl, 'confirmed');
+            try {
+              transaction = await devnetConnection.getTransaction(signature, {
+                commitment: options.commitment as Finality || 'confirmed',
+                maxSupportedTransactionVersion: 0,
+              });
+              
+              if (transaction) {
+                console.log(chalk.green(`Transaction found on devnet. Switching network...`));
+                this.connection = devnetConnection;
+                this.rpcUrl = devnetUrl;
+              }
+            } catch (err) {
+              // Ignore errors, just continue to next network
+            }
+          }
+        }
+        
+        // If still not found, try testnet
+        if (!transaction) {
+          console.log(chalk.yellow(`Not found on devnet. Trying testnet...`));
+          const testnetUrl = 'https://api.testnet.solana.com';
+          if (this.rpcUrl !== testnetUrl) {
+            const testnetConnection = new Connection(testnetUrl, 'confirmed');
+            try {
+              transaction = await testnetConnection.getTransaction(signature, {
+                commitment: options.commitment as Finality || 'confirmed',
+                maxSupportedTransactionVersion: 0,
+              });
+              
+              if (transaction) {
+                console.log(chalk.green(`Transaction found on testnet. Switching network...`));
+                this.connection = testnetConnection;
+                this.rpcUrl = testnetUrl;
+              }
+            } catch (err) {
+              // Ignore errors
+            }
+          }
+        }
+      }
+
       if (!transaction) {
-        throw new Error(`Transaction ${signature} not found`);
+        throw new Error(`Transaction ${signature} not found on any network`);
       }
 
       // Get pre-transaction account states
@@ -142,6 +216,7 @@ export class TransactionSimulator {
         instructions: [],
         timestamp: transaction.blockTime || undefined,
         slot: transaction.slot,
+        network: this.getNetworkName(this.rpcUrl),
       };
 
       // Parse logs
@@ -453,6 +528,18 @@ export class TransactionSimulator {
       // Handle versioned transactions - in a real implementation
       // This is a placeholder as the simulateTransaction doesn't support VersionedTransaction directly
       return await this.connection.simulateTransaction(Transaction.from(transaction.serialize()));
+    }
+  }
+
+  private getNetworkName(rpcUrl: string): string {
+    if (rpcUrl.includes('mainnet')) {
+      return 'mainnet';
+    } else if (rpcUrl.includes('devnet')) {
+      return 'devnet';
+    } else if (rpcUrl.includes('testnet')) {
+      return 'testnet';
+    } else {
+      return 'unknown network';
     }
   }
 } 

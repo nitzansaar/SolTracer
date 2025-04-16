@@ -11,6 +11,7 @@ interface TransactionCommandOptions {
   verbose: boolean;
   output: 'json' | 'text';
   file?: string;
+  skipNetworkFallback?: boolean;
 }
 
 /**
@@ -30,9 +31,12 @@ export class TransactionCommand {
       // Create simulator
       const simulator = new TransactionSimulator(options.rpcUrl);
       
-      // Debug the transaction
+      // Debug the transaction - allow network auto-detection
       console.log(chalk.yellow('Simulating transaction...'));
-      const result = await simulator.debugSignature(signature);
+      const simulateOptions = {
+        skipNetworkFallback: options.skipNetworkFallback
+      };
+      const result = await simulator.debugSignature(signature, simulateOptions);
       
       if (result.success) {
         console.log(chalk.green('✓ Transaction simulation successful'));
@@ -76,6 +80,9 @@ export class TransactionCommand {
       output += `Status: ${result.success ? chalk.green('Success') : chalk.red('Failed')}\n`;
       if (result.error) {
         output += `Error: ${chalk.red(result.error)}\n`;
+      }
+      if (result.network) {
+        output += `Network: ${chalk.cyan(result.network)}\n`;
       }
       if (result.slot) {
         output += `Slot: ${result.slot}\n`;

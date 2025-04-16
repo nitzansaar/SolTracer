@@ -94,12 +94,21 @@ export class InteractiveCommand {
       }
     ]);
     
-    // Execute transaction command
-    await new TransactionCommand().execute(signature.trim(), {
-      rpcUrl: options.rpcUrl,
-      verbose: options.verbose,
-      output: format
-    });
+    try {
+      // Let the simulator auto-detect the network by not providing skipNetworkFallback
+      console.log(chalk.yellow(`Debugging transaction: ${signature.trim()}`));
+      console.log(chalk.yellow(`Starting with RPC URL: ${options.rpcUrl}. Will auto-detect if needed.`));
+      
+      // Execute transaction command
+      await new TransactionCommand().execute(signature.trim(), {
+        rpcUrl: options.rpcUrl,
+        verbose: options.verbose,
+        output: format
+      });
+    } catch (error) {
+      console.error(chalk.red('Error debugging transaction:'));
+      console.error(error);
+    }
   }
   
   /**

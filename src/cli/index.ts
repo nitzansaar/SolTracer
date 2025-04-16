@@ -38,6 +38,7 @@ program
   .description('Debug a transaction using its signature')
   .option('-o, --output <format>', 'Output format (json, text)', 'text')
   .option('-f, --file <path>', 'Write output to file')
+  .option('--skip-network-fallback', 'Disable automatic network detection', false)
   .action((signature, options, command) => {
     const parentOptions = command.parent?.opts() || {};
     const rpcUrl = getClusterEndpoint(parentOptions.url || 'devnet');
@@ -47,6 +48,7 @@ program
       ...options,
       verbose,
       rpcUrl,
+      skipNetworkFallback: options.skipNetworkFallback
     });
   });
 

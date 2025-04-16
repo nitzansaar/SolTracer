@@ -56,7 +56,7 @@ npm run build
 #CLI
 npm run dev -- interactive
 #Web
-npm
+npm run web
 ```
 
 ## License

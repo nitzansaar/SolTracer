@@ -18,7 +18,7 @@ export class SolTraceServer {
    * Create a new SolTrace web server
    * @param port The port to listen on
    */
-  constructor(port: number = 3000) {
+  constructor(port: number = 3001) {
     this.port = port;
     this.app = express();
     this.server = http.createServer(this.app);

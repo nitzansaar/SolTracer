@@ -1,0 +1,15 @@
+{
+  "signature": "5hLz86rSHMWoCgdovzAqhUrHJBsqyaKmTvW7hnHEfsrpyzzdkJosnnwLr6vQwk9hsJbekLiisnAmTUtNH1PMBkeD",
+  "success": true,
+  "instructions": [
+    {
+      "programId": "11111111111111111111111111111111",
+      "programName": "System Program",
+      "instructionIndex": 0,
+      "logs": [],
+      "accountDiffs": []
+    }
+  ],
+  "timestamp": 1744846824,
+  "slot": 333943285
+}

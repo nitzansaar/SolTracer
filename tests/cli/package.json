@@ -1,0 +1,34 @@
+{
+  "name": "soltrace-tests",
+  "version": "0.1.0",
+  "description": "Tests for SolTrace Solana transaction debugger",
+  "scripts": {
+    "test": "mocha -r ts-node/register cli/**/*.test.ts",
+    "test:transaction": "mocha -r ts-node/register cli/transaction-debug.test.ts",
+    "test:program": "mocha -r ts-node/register cli/program-debug.test.ts",
+    "test:idl": "mocha -r ts-node/register cli/anchor-idl.test.ts",
+    "test:rpc": "mocha -r ts-node/register cli/rpc-endpoint.test.ts",
+    "test:interactive": "mocha -r ts-node/register cli/interactive-mode.test.ts"
+  },
+  "keywords": [
+    "solana",
+    "blockchain",
+    "debugger",
+    "test"
+  ],
+  "author": "",
+  "license": "MIT",
+  "types": "./@types",
+  "dependencies": {
+    "@solana/web3.js": "^1.78.5"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.5.7",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+} 
